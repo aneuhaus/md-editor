@@ -7,6 +7,8 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-start-dragging",
     "opener:default",
     "fs:default",
     "process:default",
@@ -21,6 +23,8 @@
     "fs:allow-write-text-file",
     "dialog:default",
     "dialog:allow-open",
-    "dialog:allow-save"
+    "dialog:allow-save",
+    "deep-link:default",
+    "deep-link:allow-get-current"
   ]
 }

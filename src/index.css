@@ -134,7 +134,7 @@ body {
 }
 
 .title-bar {
-  height: 40px;
+  min-height: 36px;
   background: var(--sidebar-bg);
   display: flex;
   align-items: center;
@@ -149,19 +149,25 @@ body {
   data-tauri-drag-region: true;
 }
 
+.app-container.fullscreen .title-bar {
+  padding-left: 13px;
+}
+
 .status-bar {
-  height: 24px;
+  height:26px;
   background: var(--sidebar-bg);
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  font-size: 11px;
+  padding: 0 13px;
+  font-size: 10px;
   color: #8b949e;
+  gap: 13px;
 }
 
 .status-item {
-  margin-right: 16px;
+  display: flex;
+  align-items: center;
   &.file-info.no-file {
     color: #8b949e;
     cursor: pointer;
