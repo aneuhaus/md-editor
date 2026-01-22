@@ -76,6 +76,18 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
     }
   }, [value]);
 
+  const insertText = (text: string) => {
+    if (!viewRef.current) return;
+    const view = viewRef.current;
+    const selection = view.state.selection.main;
+    view.dispatch({
+      changes: { from: selection.from, to: selection.to, insert: text },
+      selection: { anchor: selection.from + text.length },
+      scrollIntoView: true,
+    });
+    view.focus();
+  };
+
   return (
     <div 
       ref={(node) => {
@@ -85,7 +97,11 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
         if (typeof ref === 'function') {
           ref(node);
         } else if (ref) {
-          (ref as any).current = node;
+          if(node){
+            // @ts-ignore
+            node.insertText = insertText;
+          }
+          ref.current = node;
         }
       }} 
       style={{ height: '100%', width: '100%' }} 

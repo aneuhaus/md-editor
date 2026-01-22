@@ -4,15 +4,19 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { 
+import {
   FileText,
-  BarChart
+  BarChart,
+  Smile
 } from "lucide-react";
 import Editor from "./components/Editor";
 import Preview from "./components/Preview";
+import EmojiPicker from "./components/EmojiPicker";
 import "./index.css";
 
-import { useDebounce } from "./customHooks";
+import { useDebounce } from "./common/customHooks";
+
+import type { Emoji } from "./common/emojiMap";
 
 function App() {
   const [content, setContent] = useState("# Welcome to Markdown Editor\n\nStart typing to see the preview on the right.");
@@ -20,15 +24,14 @@ function App() {
   const [leftWidth, setLeftWidth] = useState(48); // percentage
   const [isResizing, setIsResizing] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleFullscreenChange = useDebounce(async () => {
     const isFullscreen = await invoke<boolean>("is_fullscreen");
-    console.log("isFullscreen", isFullscreen);
     setFullscreen(isFullscreen);
   }, 100);
 
   useEffect(() => {
-    console.log("handleFullscreenChange");
     handleFullscreenChange();
     const unlisten = listen<boolean>("tauri://resize", () => {
       handleFullscreenChange();
@@ -122,23 +125,19 @@ function App() {
     }
   };
 
-  const editorRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<React.ComponentRef<typeof Editor>>(null);
 
   useEffect(() => {
     if (isResizing) {
-      if(editorRef.current) {
-        editorRef.current.style.userSelect = "none";
-        // @ts-ignore
-        editorRef.current.style["-webkit-user-select"] = "none";
-      }
+      document.body.style.userSelect = "none";
+      // @ts-ignore
+      document.body.style["-webkit-user-select"] = "none";
       window.addEventListener('mousemove', onResize);
       window.addEventListener('mouseup', stopResizing);
     } else {
-      if(editorRef.current) {
-        editorRef.current.style.userSelect = "auto";
-        // @ts-ignore
-        editorRef.current.style["-webkit-user-select"] = "auto";
-      }
+      document.body.style.userSelect = "auto";
+      // @ts-ignore
+      document.body.style["-webkit-user-select"] = "auto";
       window.removeEventListener('mousemove', onResize);
       window.removeEventListener('mouseup', stopResizing);
     }
@@ -180,12 +179,41 @@ function App() {
     }
   };
 
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+  };
+
+  const handleEmojiSelect = (emoji: Emoji) => {    
+    if (editorRef.current) {
+      // @ts-ignore - custom method added in Editor.tsx
+      if (typeof editorRef.current.insertText === 'function') {
+         // @ts-ignore
+        editorRef.current.insertText(emoji.emoji);        
+      }
+    }
+    setShowEmojiPicker(false);
+  };
+
   return (
     <>
       <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
         <div className="title-bar" {...({ "data-tauri-drag-region": "true" } as any)}>
-          <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
-          {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
+          <div style={{ display: 'flex', alignItems: 'left' }}>
+            <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
+            {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
+          </div>
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'right', paddingRight: '13px' }}>
+             <div onClick={toggleEmojiPicker} style={{ cursor: 'pointer', display: 'flex' }}>
+               <Smile size={16} style={{ marginRight: 1, opacity: 0.7 }} />
+             </div>
+             {showEmojiPicker && (
+                <EmojiPicker 
+                  onSelect={handleEmojiSelect} 
+                  onClose={() => setShowEmojiPicker(false)}
+                  style={{ }}
+                />
+             )}
+          </div>
         </div>
         <div className="split-pane">
           <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
@@ -205,7 +233,6 @@ function App() {
       </div>
       <div className="status-bar">
         <div className={`status-item file-info ${!filePath ? "no-file" : ""}`} onClick={openFileDialog}>
-          <FileText size={12} style={{ marginRight: 8 }} />
           {filePath ? filePath : "No file open"}
         </div>
         <div className="spacer" />
