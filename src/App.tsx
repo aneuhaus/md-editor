@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { Edit3, Eye, FileText, BarChart } from "lucide-react";
+import { 
+  // Edit3,
+  // Eye,
+  FileText,
+  BarChart
+} from "lucide-react";
 import Editor from "./components/Editor";
 import Preview from "./components/Preview";
 import "./index.css";
@@ -14,7 +19,7 @@ import { useDebounce } from "./customHooks";
 function App() {
   const [content, setContent] = useState("# Welcome to Markdown Editor\n\nStart typing to see the preview on the right.");
   const [filePath, setFilePath] = useState<string | null>(null);
-  const [leftWidth, setLeftWidth] = useState(50); // percentage
+  const [leftWidth, setLeftWidth] = useState(48); // percentage
   const [isResizing, setIsResizing] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -119,11 +124,23 @@ function App() {
     }
   };
 
+  const editorRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (isResizing) {
+      if(editorRef.current) {
+        editorRef.current.style.userSelect = "none";
+        // @ts-ignore
+        editorRef.current.style["-webkit-user-select"] = "none";
+      }
       window.addEventListener('mousemove', onResize);
       window.addEventListener('mouseup', stopResizing);
     } else {
+      if(editorRef.current) {
+        editorRef.current.style.userSelect = "auto";
+        // @ts-ignore
+        editorRef.current.style["-webkit-user-select"] = "auto";
+      }
       window.removeEventListener('mousemove', onResize);
       window.removeEventListener('mouseup', stopResizing);
     }
@@ -161,36 +178,30 @@ function App() {
     if (!isResizing) return;
     const newWidth = (e.clientX / window.innerWidth) * 100;
     if (newWidth > 10 && newWidth < 90) {
-      setLeftWidth(newWidth);
+      setLeftWidth(newWidth-2);
     }
   };
 
   return (
-    <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
-      <div className="title-bar" {...({ "data-tauri-drag-region": "true" } as any)}>
-        <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
-        {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
-      </div>
-      <div className="split-pane">
-        <div className="pane editor-pane" style={{ width: `${leftWidth}%`, flex: 'none' }}>
-          <div className="pane-header">
-            <Edit3 size={14} style={{ marginRight: 8 }} />
-            Editor
-          </div>
-          <div className="pane-content" style={{ flex: 1, overflow: 'hidden' }}>
-            <Editor value={content} onChange={setContent} />
-          </div>
+    <>
+      <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
+        <div className="title-bar" {...({ "data-tauri-drag-region": "true" } as any)}>
+          <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
+          {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
         </div>
-
-        <div className="resizer" onMouseDown={startResizing} />
-
-        <div className="pane preview-pane" style={{ width: `${100 - leftWidth}%`, flex: 'none' }}>
-          <div className="pane-header">
-            <Eye size={14} style={{ marginRight: 8 }} />
-            Preview
+        <div className="split-pane">
+          <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
+            <div className="pane-content" style={{ flex: 1, overflow: 'hidden' }}>
+              <Editor ref={editorRef} value={content} onChange={setContent} />
+            </div>
           </div>
-          <div className="pane-content" style={{ flex: 1, overflow: 'auto' }}>
-            <Preview content={content} />
+
+          <div className="resizer" onMouseDown={startResizing} />
+
+          <div className="pane preview-pane" style={{ width: `calc(${100 - leftWidth}% - 2px)`, flex: 'none' }}>
+            <div className="pane-content" style={{ flex: 1, overflow: 'auto' }}>
+              <Preview content={content} />
+            </div>
           </div>
         </div>
       </div>
@@ -208,7 +219,7 @@ function App() {
           {content.length} characters
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
