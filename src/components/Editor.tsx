@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, forwardRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
@@ -9,21 +9,12 @@ import { syntaxHighlighting, defaultHighlightStyle, indentUnit } from '@codemirr
 interface EditorProps {
   value: string;
   onChange: (value: string) => void;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-const Editor = forwardRef<HTMLDivElement, EditorProps>(({ value, onChange }, ref) => {
+const Editor = ({ value, onChange, ref }: EditorProps) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-
-  // Sync internal ref with forwarded ref
-  useEffect(() => {
-    if (!ref) return;
-    if (typeof ref === 'function') {
-      ref(elementRef.current);
-    } else {
-      (ref as React.MutableRefObject<HTMLDivElement | null>).current = elementRef.current;
-    }
-  }, [ref]);
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -85,7 +76,21 @@ const Editor = forwardRef<HTMLDivElement, EditorProps>(({ value, onChange }, ref
     }
   }, [value]);
 
-  return <div ref={elementRef} style={{ height: '100%', width: '100%' }} />;
-});
+  return (
+    <div 
+      ref={(node) => {
+        // Internal ref
+        elementRef.current = node;
+        // External ref
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          (ref as any).current = node;
+        }
+      }} 
+      style={{ height: '100%', width: '100%' }} 
+    />
+  );
+};
 
 export default Editor;
