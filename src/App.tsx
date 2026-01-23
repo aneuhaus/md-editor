@@ -5,9 +5,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import {
+  Code,
+  Code2,
+  Subscript,
+  Superscript,
+  Underline,
   FileText,
   BarChart,
-  Smile
+  Smile,
+  Bold,
+  Italic,
+  Strikethrough
 } from "lucide-react";
 import Editor from "./components/Editor";
 import Preview from "./components/Preview";
@@ -25,6 +33,8 @@ function App() {
   const [isResizing, setIsResizing] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [shortcutKeys, setShortcutKeys] = useState(false)
+    
 
   const handleFullscreenChange = useDebounce(async () => {
     const isFullscreen = await invoke<boolean>("is_fullscreen");
@@ -97,22 +107,68 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        saveFile();
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault();
-        invoke("toggle_fullscreen");
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'o') {
-        e.preventDefault();
-        openFileDialog();
+      if (e.metaKey || e.ctrlKey) {
+        showShortcutKeys();
+        switch (e.key) {
+          case 's':
+            e.preventDefault();
+            saveFile();
+            break;
+          case 'f':
+            e.preventDefault();
+            invoke("toggle_fullscreen");
+            break;
+          case 'o':
+            e.preventDefault();
+            openFileDialog();
+            break;
+          case 'b':
+            e.preventDefault();
+            handleFormat('bold');
+            break;
+          case 'i':
+            e.preventDefault();
+            handleFormat('italic');
+            break;
+          case 'u':
+            e.preventDefault();
+            handleFormat('underline');
+            break;
+          case 'x':
+            e.preventDefault();
+            handleFormat('strikethrough');
+            break;
+          case 'e':
+            e.preventDefault();
+            toggleEmojiPicker();
+            break;
+        }  
       }
     };
+    const handleKeyUp = () => {
+      hideShortcutKeys(); 
+    }
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    };
   }, [content, filePath]);
+
+  let showShortcutKeysTimeout: number;
+
+  const showShortcutKeys = () => {
+    clearTimeout(showShortcutKeysTimeout);
+    showShortcutKeysTimeout = setTimeout(() => {
+      setShortcutKeys(true);
+    }, 600);
+  }
+
+  const hideShortcutKeys = () => {
+    clearTimeout(showShortcutKeysTimeout);
+    setShortcutKeys(false);
+  }
 
   const saveFile = async () => {
     if (!filePath) return;
@@ -194,6 +250,26 @@ function App() {
     setShowEmojiPicker(false);
   };
 
+  const handleFormat = (type: 'bold' | 'italic' | 'strikethrough' | 'codeMulti' | 'codeSingle' | 'subscript' | 'superscript' | 'underline') => {
+    if (editorRef.current) {
+      if (typeof (editorRef.current as any).insertFormat === 'function') {
+        let start = '';
+        let end = '';
+        switch(type) {
+          case 'bold': start = '**'; end = '**'; break;
+          case 'italic': start = '*'; end = '*'; break;
+          case 'strikethrough': start = '~~'; end = '~~'; break;
+          case 'codeMulti': start = '\n```\n'; end = '\n```\n'; break;
+          case 'codeSingle': start = '`'; end = '`'; break;
+          case 'subscript': start = '<sub>'; end = '</sub>'; break;
+          case 'superscript': start = '<sup>'; end = '</sup>'; break;
+          case 'underline': start = '<u>'; end = '</u>'; break;
+        }
+        (editorRef.current as any).insertFormat(start, end);
+      }
+    }
+  };
+
   return (
     <>
       <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
@@ -202,8 +278,34 @@ function App() {
             <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
             {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
           </div>
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'right', paddingRight: '13px' }}>
-             <div onClick={toggleEmojiPicker} style={{ cursor: 'pointer', display: 'flex' }}>
+          <div className={`toolbar ${shortcutKeys ? "show-shortcut-keys" : ""}`}>
+             <div onClick={() => handleFormat('codeMulti')} className="toolbar-button" title="Multi Line Code">
+               <Code size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('codeSingle')} className="toolbar-button" title="Single Line Code">
+               <Code2 size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div className="toolbar-separator" />
+             <div onClick={() => handleFormat('bold')} className="toolbar-button" title="Bold" data-key="B">
+               <Bold size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('italic')} className="toolbar-button" title="Italic" data-key="I">
+               <Italic size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('underline')} className="toolbar-button" title="Underline" data-key="U">
+               <Underline size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('strikethrough')} className="toolbar-button" title="Strikethrough" data-key="S">
+               <Strikethrough size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('subscript')} className="toolbar-button" title="Subscript">
+               <Subscript size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div onClick={() => handleFormat('superscript')} className="toolbar-button" title="Superscript">
+               <Superscript size={16} style={{ opacity: 0.7 }} />
+             </div>
+             <div className="toolbar-separator" />
+             <div onClick={toggleEmojiPicker} className="toolbar-button" title="Emoji" data-key="E">
                <Smile size={16} style={{ marginRight: 1, opacity: 0.7 }} />
              </div>
              {showEmojiPicker && (

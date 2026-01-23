@@ -1,21 +1,30 @@
 # Markdown Editor Test
 
-This is a test file for the **Markdown Editor**.
+This is a *test* file for the **Markdown Editor**.
 
 # Demo
+`single line code` 
+```
+multi line code
+```
 
-## Task List
+<sup>Super</sup> and <sub>subscript</sub>
+
+## Task **~~List~~**
 - [ ] Task 1
 - [x] Task 2
 - [ ] Task 3
 
 ## Alerts
 > [!NOTE]
-> This is a note.
+> This is a *note*.
+
+asd<sup>curiosity</sup>
 
 > [!WARNING]
-> This is a warning.
-
+> This is a **warning**.
+~~💤~~
+> H<sub>2</sub>O
 ## Footnotes
 Here is a footnote reference[^1].
 

@@ -105,7 +105,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, style }) =
             display: 'grid', 
             gridTemplateColumns: 'repeat(5, 1fr)', 
             gap: '4px',
-            maxHeight: '160px',
+            height: '160px',
             overflowY: 'auto'
           }}
         >
@@ -125,7 +125,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose, style }) =
                 borderRadius: '4px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                height: 'fit-content',
               }}
               onMouseEnter={(e) => e.currentTarget.style.background = '#333'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}

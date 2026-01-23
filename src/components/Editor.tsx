@@ -88,6 +88,29 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
     view.focus();
   };
 
+  const insertFormat = (startTag: string, endTag: string) => {
+    if (!viewRef.current) return;
+    const view = viewRef.current;
+    
+    const selection = view.state.selection.main;
+    const selectedText = view.state.sliceDoc(selection.from, selection.to);
+    const textToInsert = startTag + selectedText + endTag;
+
+    view.dispatch({
+      changes: {
+        from: selection.from,
+        to: selection.to,
+        insert: textToInsert,
+      },
+      selection: {
+        anchor: selection.from + startTag.length,
+        head: selection.from + startTag.length + selectedText.length,
+      },
+      scrollIntoView: true,
+    });
+    view.focus();
+  };
+
   return (
     <div 
       ref={(node) => {
@@ -100,6 +123,8 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
           if(node){
             // @ts-ignore
             node.insertText = insertText;
+            // @ts-ignore
+            node.insertFormat = insertFormat;
           }
           ref.current = node;
         }
