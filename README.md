@@ -60,6 +60,16 @@ To build the application for macOS:
 bun run tauri build
 ```
 
+##Acknowledgements
+
+- [Markdown-it](https://github.com/markdown-it/markdown-it)
+- [CodeMirror](https://codemirror.net/)
+- [Tauri](https://tauri.app/)
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Lucide](https://lucide.dev/) 
+- [Emoji Map](https://gist.github.com/jonobr1/ebea6185cb4fb9ae5f4174a302910121) Thanks to [jonobr1](https://github.com/jonobr1)
+
 The output application (`.dmg` or `.app`) will be located in `src-tauri/target/release/bundle/macos/`.
 
 ## License
