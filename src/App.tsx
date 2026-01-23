@@ -18,6 +18,7 @@ import {
   Strikethrough
 } from "lucide-react";
 import Editor from "./components/Editor";
+import ToolbarButton from "./components/ToolbarButton";
 import Preview from "./components/Preview";
 import EmojiPicker from "./components/EmojiPicker";
 import "./index.css";
@@ -279,40 +280,21 @@ function App() {
             {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
           </div>
           <div className={`toolbar ${shortcutKeys ? "show-shortcut-keys" : ""}`}>
-             <div onClick={() => handleFormat('codeMulti')} className="toolbar-button" title="Multi Line Code">
-               <Code size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('codeSingle')} className="toolbar-button" title="Single Line Code">
-               <Code2 size={16} style={{ opacity: 0.7 }} />
-             </div>
+             <ToolbarButton onClick={() => handleFormat('codeMulti')} title="Multi Line Code" icon={Code} />
+             <ToolbarButton onClick={() => handleFormat('codeSingle')} title="Single Line Code" icon={Code2} />
              <div className="toolbar-separator" />
-             <div onClick={() => handleFormat('bold')} className="toolbar-button" title="Bold" data-key="B">
-               <Bold size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('italic')} className="toolbar-button" title="Italic" data-key="I">
-               <Italic size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('underline')} className="toolbar-button" title="Underline" data-key="U">
-               <Underline size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('strikethrough')} className="toolbar-button" title="Strikethrough" data-key="S">
-               <Strikethrough size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('subscript')} className="toolbar-button" title="Subscript">
-               <Subscript size={16} style={{ opacity: 0.7 }} />
-             </div>
-             <div onClick={() => handleFormat('superscript')} className="toolbar-button" title="Superscript">
-               <Superscript size={16} style={{ opacity: 0.7 }} />
-             </div>
+             <ToolbarButton onClick={() => handleFormat('bold')} title="Bold" data-key="B" icon={Bold} />
+             <ToolbarButton onClick={() => handleFormat('italic')} title="Italic" data-key="I" icon={Italic} />
+             <ToolbarButton onClick={() => handleFormat('underline')} title="Underline" data-key="U" icon={Underline} />
+             <ToolbarButton onClick={() => handleFormat('strikethrough')} title="Strikethrough" data-key="X" icon={Strikethrough} />
+             <ToolbarButton onClick={() => handleFormat('subscript')} title="Subscript" data-key="S" icon={Subscript} />
+             <ToolbarButton onClick={() => handleFormat('superscript')} title="Superscript" data-key="S" icon={Superscript} />
              <div className="toolbar-separator" />
-             <div onClick={toggleEmojiPicker} className="toolbar-button" title="Emoji" data-key="E">
-               <Smile size={16} style={{ marginRight: 1, opacity: 0.7 }} />
-             </div>
+             <ToolbarButton onClick={toggleEmojiPicker} title="Emoji" data-key="E" icon={Smile} />
              {showEmojiPicker && (
                 <EmojiPicker 
                   onSelect={handleEmojiSelect} 
                   onClose={() => setShowEmojiPicker(false)}
-                  style={{ }}
                 />
              )}
           </div>
