@@ -39,17 +39,9 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
         }),
         EditorView.theme({
           "&": { height: "100%" },
-          ".cm-scroller": { overflow: "auto" },
-          ".cm-content": { lineHeight: "2rem" },
-          ".cm-gutter": { 
-            width: "2rem",
-            padding: "0 0.25rem",
-            borderRight: "1px solid #333",
-          },
-          ".cm-gutterElement": { 
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
+          ".cm-scroller": { overflow: "auto", padding: "1rem" },
+          ".cm-gutters": { 
+            display: "none",
           },
         })
       ],

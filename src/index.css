@@ -7,7 +7,8 @@
   --border-color: #30363d;
   --accent-color: #58a6ff;
   --sidebar-bg: #161b22;
-  --editor-bg: #0d1117;
+  /* --editor-bg: #3E4451; */
+  --editor-bg: #282c34;
   --preview-bg: #0d1117;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
@@ -147,6 +148,8 @@ body {
   -webkit-user-select: none;
   padding-top: 2px;
   padding-left: 85px; /* Space for traffic lights */
+  /* ignore unknown property */
+  /* stylelint-disable-next-line */
   data-tauri-drag-region: true;
 }
 
@@ -154,14 +157,18 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  justify-content: right;
-  padding-right: 13px;
+  justify-content: center;
+  padding: 0 13px;
+  min-height: 36px;
+  background-color: var(--editor-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding-top: 3px;
 }
 
 .toolbar-separator {
   width: 1px;
   height: 16px;
-  background: #333;
+  background: var(--border-color);
   margin: 0 8px;
 }
 

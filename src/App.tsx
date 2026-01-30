@@ -5,22 +5,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import {
-  Code,
-  Code2,
-  Subscript,
-  Superscript,
-  Underline,
   FileText,
   BarChart,
-  Smile,
-  Bold,
-  Italic,
-  Strikethrough
 } from "lucide-react";
 import Editor from "./components/Editor";
-import ToolbarButton from "./components/ToolbarButton";
+import Toolbar from "./components/Toolbar";
 import Preview from "./components/Preview";
-import EmojiPicker from "./components/EmojiPicker";
 import "./index.css";
 
 import { useDebounce } from "./common/customHooks";
@@ -160,8 +150,10 @@ function App() {
   let showShortcutKeysTimeout: number;
 
   const showShortcutKeys = () => {
+    console.log("showShortcutKeys");
     clearTimeout(showShortcutKeysTimeout);
     showShortcutKeysTimeout = setTimeout(() => {
+      console.log("showShortcutKeys true");
       setShortcutKeys(true);
     }, 600);
   }
@@ -273,34 +265,27 @@ function App() {
 
   return (
     <>
+
       <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
-        <div className="title-bar" {...({ "data-tauri-drag-region": "true" } as any)}>
+
+        {/* <div className="title-bar" >
           <div style={{ display: 'flex', alignItems: 'left' }}>
             <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
             {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
           </div>
-          <div className={`toolbar ${shortcutKeys ? "show-shortcut-keys" : ""}`}>
-             <ToolbarButton onClick={() => handleFormat('codeMulti')} title="Multi Line Code" icon={Code} />
-             <ToolbarButton onClick={() => handleFormat('codeSingle')} title="Single Line Code" icon={Code2} />
-             <div className="toolbar-separator" />
-             <ToolbarButton onClick={() => handleFormat('bold')} title="Bold" data-key="B" icon={Bold} />
-             <ToolbarButton onClick={() => handleFormat('italic')} title="Italic" data-key="I" icon={Italic} />
-             <ToolbarButton onClick={() => handleFormat('underline')} title="Underline" data-key="U" icon={Underline} />
-             <ToolbarButton onClick={() => handleFormat('strikethrough')} title="Strikethrough" data-key="X" icon={Strikethrough} />
-             <ToolbarButton onClick={() => handleFormat('subscript')} title="Subscript" data-key="S" icon={Subscript} />
-             <ToolbarButton onClick={() => handleFormat('superscript')} title="Superscript" data-key="S" icon={Superscript} />
-             <div className="toolbar-separator" />
-             <ToolbarButton onClick={toggleEmojiPicker} title="Emoji" data-key="E" icon={Smile} />
-             {showEmojiPicker && (
-                <EmojiPicker 
-                  onSelect={handleEmojiSelect} 
-                  onClose={() => setShowEmojiPicker(false)}
-                />
-             )}
-          </div>
-        </div>
+        </div> */}
+
         <div className="split-pane">
           <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
+            <Toolbar 
+              shortcutKeys={shortcutKeys}
+              onFormat={handleFormat}
+              onToggleEmoji={toggleEmojiPicker}
+              showEmojiPicker={showEmojiPicker}
+              onEmojiSelect={handleEmojiSelect}
+              onCloseEmoji={() => setShowEmojiPicker(false)}
+              {...({ "data-tauri-drag-region": "true" } as any)}
+            />
             <div className="pane-content" style={{ flex: 1, overflow: 'hidden' }}>
               <Editor ref={editorRef} value={content} onChange={setContent} />
             </div>
@@ -314,7 +299,9 @@ function App() {
             </div>
           </div>
         </div>
+
       </div>
+
       <div className="status-bar">
         <div className={`status-item file-info ${!filePath ? "no-file" : ""}`} onClick={openFileDialog}>
           {filePath ? filePath : "No file open"}
@@ -328,6 +315,7 @@ function App() {
           {content.length} characters
         </div>
       </div>
+      
     </>
   );
 }
