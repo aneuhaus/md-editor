@@ -39,7 +39,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <ToolbarButton onClick={() => onFormat('bold')} title="Bold" shortcut="B" icon={Bold} />
       <ToolbarButton onClick={() => onFormat('italic')} title="Italic" shortcut="I" icon={Italic} />
       <ToolbarButton onClick={() => onFormat('underline')} title="Underline" shortcut="U" icon={Underline} />
-      <ToolbarButton onClick={() => onFormat('strikethrough')} title="Strikethrough" shortcut="X" icon={Strikethrough} />
+      <ToolbarButton onClick={() => onFormat('strikethrough')} title="Strikethrough" shortcut="T" icon={Strikethrough} />
       <ToolbarButton onClick={() => onFormat('subscript')} title="Subscript" icon={Subscript} />
       <ToolbarButton onClick={() => onFormat('superscript')} title="Superscript" icon={Superscript} />
       <div className="toolbar-separator" />

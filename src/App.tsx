@@ -124,7 +124,7 @@ function App() {
             e.preventDefault();
             handleFormat('underline');
             break;
-          case 'x':
+          case 't':
             e.preventDefault();
             handleFormat('strikethrough');
             break;
