@@ -5,7 +5,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 import {
-  FileText,
   BarChart,
 } from "lucide-react";
 import Editor from "./components/Editor";
