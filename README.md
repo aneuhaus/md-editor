@@ -60,7 +60,7 @@ To build the application for macOS:
 bun run tauri build
 ```
 
-##Acknowledgements
+## Acknowledgements
 
 - [Markdown-it](https://github.com/markdown-it/markdown-it)
 - [CodeMirror](https://codemirror.net/)
