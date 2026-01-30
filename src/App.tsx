@@ -267,13 +267,6 @@ function App() {
 
       <div className={`app-container${fullscreen ? " fullscreen" : ""}`}>
 
-        {/* <div className="title-bar" >
-          <div style={{ display: 'flex', alignItems: 'left' }}>
-            <FileText size={16} style={{ marginRight: 8, opacity: 0.7 }} />
-            {filePath ? `${filePath.split('/').pop()}` : "Untitled.md"}
-          </div>
-        </div> */}
-
         <div className="split-pane">
           <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
             <Toolbar 
