@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
@@ -23,7 +22,6 @@ function App() {
   const [isResizing, setIsResizing] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [shortcutKeys, setShortcutKeys] = useState(false)
     
 
   const handleFullscreenChange = useDebounce(async () => {
@@ -70,9 +68,7 @@ function App() {
 
   useEffect(() => {
     const setupDeepLink = async () => {
-      console.log("setupDeepLink");
       return await onOpenUrl((urls) => {
-        console.log(urls);
         const path = urls[0];
         if (path) {
           let cleanPath = path;
@@ -90,77 +86,6 @@ function App() {
       if (unlisten) unlisten();
     };
   }, []);
-
-  useEffect(() => {
-    console.dir(getCurrentWindow());
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) {
-        showShortcutKeys();
-        switch (e.key) {
-          case 's':
-            e.preventDefault();
-            saveFile();
-            break;
-          case 'f':
-            e.preventDefault();
-            invoke("toggle_fullscreen");
-            break;
-          case 'o':
-            e.preventDefault();
-            openFileDialog();
-            break;
-          case 'b':
-            e.preventDefault();
-            handleFormat('bold');
-            break;
-          case 'i':
-            e.preventDefault();
-            handleFormat('italic');
-            break;
-          case 'u':
-            e.preventDefault();
-            handleFormat('underline');
-            break;
-          case 't':
-            e.preventDefault();
-            handleFormat('strikethrough');
-            break;
-          case 'e':
-            e.preventDefault();
-            toggleEmojiPicker();
-            break;
-        }  
-      }
-    };
-    const handleKeyUp = () => {
-      hideShortcutKeys(); 
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
-    };
-  }, [content, filePath]);
-
-  let showShortcutKeysTimeout: number;
-
-  const showShortcutKeys = () => {
-    console.log("showShortcutKeys");
-    clearTimeout(showShortcutKeysTimeout);
-    showShortcutKeysTimeout = setTimeout(() => {
-      console.log("showShortcutKeys true");
-      setShortcutKeys(true);
-    }, 600);
-  }
-
-  const hideShortcutKeys = () => {
-    clearTimeout(showShortcutKeysTimeout);
-    setShortcutKeys(false);
-  }
 
   const saveFile = async () => {
     if (!filePath) return;
@@ -242,24 +167,28 @@ function App() {
     setShowEmojiPicker(false);
   };
 
-  const handleFormat = (type: 'bold' | 'italic' | 'strikethrough' | 'codeMulti' | 'codeSingle' | 'subscript' | 'superscript' | 'underline') => {
+  const formattingHandlers: { [key: string]: string[] } = {
+    'bold': ['**', '**'],
+    'italic': ['*', '*'],
+    'strikethrough': ['~~', '~~'],
+    'codeMulti': ['\n```\n', '\n```\n'],
+    'codeSingle': ['`', '`'],
+    'subscript': ['<sub>', '</sub>'],
+    'superscript': ['<sup>', '</sup>'],
+    'underline': ['<u>', '</u>'],
+  }
+
+  const handleFormat = (type: keyof typeof formattingHandlers) => {
     if (editorRef.current) {
       if (typeof (editorRef.current as any).insertFormat === 'function') {
-        let start = '';
-        let end = '';
-        switch(type) {
-          case 'bold': start = '**'; end = '**'; break;
-          case 'italic': start = '*'; end = '*'; break;
-          case 'strikethrough': start = '~~'; end = '~~'; break;
-          case 'codeMulti': start = '\n```\n'; end = '\n```\n'; break;
-          case 'codeSingle': start = '`'; end = '`'; break;
-          case 'subscript': start = '<sub>'; end = '</sub>'; break;
-          case 'superscript': start = '<sup>'; end = '</sup>'; break;
-          case 'underline': start = '<u>'; end = '</u>'; break;
-        }
+        let [start, end] = formattingHandlers[type];
         (editorRef.current as any).insertFormat(start, end);
       }
     }
+  };
+
+  const toggleFullscreen = () => {
+    invoke("toggle_fullscreen");
   };
 
   return (
@@ -270,9 +199,11 @@ function App() {
         <div className="split-pane">
           <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
             <Toolbar 
-              shortcutKeys={shortcutKeys}
               onFormat={handleFormat}
               onToggleEmoji={toggleEmojiPicker}
+              onSave={saveFile}
+              onOpen={openFileDialog}
+              onFullscreen={toggleFullscreen}
               showEmojiPicker={showEmojiPicker}
               onEmojiSelect={handleEmojiSelect}
               onCloseEmoji={() => setShowEmojiPicker(false)}

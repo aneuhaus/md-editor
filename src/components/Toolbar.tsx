@@ -13,24 +13,40 @@ import {
 import ToolbarButton from "./ToolbarButton";
 import EmojiPicker from "./EmojiPicker";
 import type { Emoji } from "../common/emojiMap";
+import { useKeyBindings } from "../common/useKeyBindings";
 
 interface ToolbarProps {
-  shortcutKeys: boolean;
   onFormat: (type: 'bold' | 'italic' | 'strikethrough' | 'codeMulti' | 'codeSingle' | 'subscript' | 'superscript' | 'underline') => void;
   onToggleEmoji: () => void;
+  onSave: () => void;
+  onOpen: () => void;
+  onFullscreen: () => void;
   showEmojiPicker: boolean;
   onEmojiSelect: (emoji: Emoji) => void;
   onCloseEmoji: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
-  shortcutKeys,
   onFormat,
   onToggleEmoji,
+  onSave,
+  onOpen,
+  onFullscreen,
   showEmojiPicker,
   onEmojiSelect,
   onCloseEmoji,
 }) => {
+  const { shortcutKeys } = useKeyBindings({
+    's': onSave,
+    'f': onFullscreen,
+    'o': onOpen,
+    'b': () => onFormat('bold'),
+    'i': () => onFormat('italic'),
+    'u': () => onFormat('underline'),
+    't': () => onFormat('strikethrough'),
+    'e': onToggleEmoji,
+  });
+
   return (
     <div className={`toolbar${shortcutKeys ? " show-shortcut-keys" : ""}`} {...({ "data-tauri-drag-region": "true" } as any)}>
       <ToolbarButton onClick={() => onFormat('codeMulti')} title="Multi Line Code" icon={Code} />
