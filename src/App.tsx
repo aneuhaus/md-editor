@@ -3,12 +3,20 @@ import { onOpenUrl } from "@tauri-apps/plugin-deep-link";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { readTextFile } from "@tauri-apps/plugin-fs";
+
 import {
-  BarChart,
+  BarChart, Code, Code2, Bold, Italic, Underline,
+  Strikethrough, Subscript, Superscript, Smile,
 } from "lucide-react";
+
 import Editor, { EditorHandle } from "./components/Editor";
 import Toolbar from "./components/Toolbar";
+import ToolbarButton from "./components/ToolbarButton";
+import EmojiPicker from "./components/EmojiPicker";
 import Preview from "./components/Preview";
+
+import { useKeyBindings } from "./common/useKeyBindings";
+
 import "./index.css";
 
 import { useDebounce } from "./common/customHooks";
@@ -22,7 +30,7 @@ function App() {
   const [isResizing, setIsResizing] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    
+
 
   const handleFullscreenChange = useDebounce(async () => {
     const isFullscreen = await invoke<boolean>("is_fullscreen");
@@ -148,7 +156,7 @@ function App() {
     if (!isResizing) return;
     const newWidth = (e.clientX / window.innerWidth) * 100;
     if (newWidth > 10 && newWidth < 90) {
-      setLeftWidth(newWidth-2);
+      setLeftWidth(newWidth - 2);
     }
   };
 
@@ -156,9 +164,9 @@ function App() {
     setShowEmojiPicker(!showEmojiPicker);
   };
 
-  const handleEmojiSelect = (emoji: Emoji) => {    
+  const handleEmojiSelect = (emoji: Emoji) => {
     if (editorRef.current) {
-      editorRef.current.insertText(emoji.emoji);        
+      editorRef.current.insertText(emoji.emoji);
     }
     setShowEmojiPicker(false);
   };
@@ -185,6 +193,17 @@ function App() {
     invoke("toggle_fullscreen");
   };
 
+  const { shortcutKeys } = useKeyBindings({
+    's': saveFile,
+    'f': toggleFullscreen,
+    'o': openFileDialog,
+    'b': () => handleFormat('bold'),
+    'i': () => handleFormat('italic'),
+    'u': () => handleFormat('underline'),
+    't': () => handleFormat('strikethrough'),
+    'e': toggleEmojiPicker,
+  });
+
   return (
     <>
 
@@ -192,17 +211,25 @@ function App() {
 
         <div className="split-pane">
           <div className="pane editor-pane" style={{ width: `calc(${leftWidth}% - 2px)`, flex: 'none' }}>
-            <Toolbar 
-              onFormat={handleFormat}
-              onToggleEmoji={toggleEmojiPicker}
-              onSave={saveFile}
-              onOpen={openFileDialog}
-              onFullscreen={toggleFullscreen}
-              showEmojiPicker={showEmojiPicker}
-              onEmojiSelect={handleEmojiSelect}
-              onCloseEmoji={() => setShowEmojiPicker(false)}
-              {...({ "data-tauri-drag-region": "true" } as any)}
-            />
+            <Toolbar showShortcutKeys={shortcutKeys} {...({ "data-tauri-drag-region": "true" } as any)}>
+              <ToolbarButton onClick={() => handleFormat('codeMulti')} title="Multi Line Code" icon={Code} />
+              <ToolbarButton onClick={() => handleFormat('codeSingle')} title="Single Line Code" icon={Code2} />
+              <div className="toolbar-separator" />
+              <ToolbarButton onClick={() => handleFormat('bold')} title="Bold" shortcut="B" icon={Bold} />
+              <ToolbarButton onClick={() => handleFormat('italic')} title="Italic" shortcut="I" icon={Italic} />
+              <ToolbarButton onClick={() => handleFormat('underline')} title="Underline" shortcut="U" icon={Underline} />
+              <ToolbarButton onClick={() => handleFormat('strikethrough')} title="Strikethrough" shortcut="T" icon={Strikethrough} />
+              <ToolbarButton onClick={() => handleFormat('subscript')} title="Subscript" icon={Subscript} />
+              <ToolbarButton onClick={() => handleFormat('superscript')} title="Superscript" icon={Superscript} />
+              <div className="toolbar-separator" />
+              <ToolbarButton onClick={toggleEmojiPicker} title="Emoji" shortcut="E" icon={Smile} />
+              {showEmojiPicker && (
+                <EmojiPicker
+                  onSelect={handleEmojiSelect}
+                  onClose={() => setShowEmojiPicker(false)}
+                />
+              )}
+            </Toolbar>
             <div className="pane-content" style={{ flex: 1, overflow: 'hidden' }}>
               <Editor ref={editorRef} value={content} onChange={setContent} />
             </div>
@@ -232,7 +259,7 @@ function App() {
           {content.length} characters
         </div>
       </div>
-      
+
     </>
   );
 }
