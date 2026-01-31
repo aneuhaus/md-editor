@@ -6,7 +6,7 @@ import { readTextFile } from "@tauri-apps/plugin-fs";
 import {
   BarChart,
 } from "lucide-react";
-import Editor from "./components/Editor";
+import Editor, { EditorHandle } from "./components/Editor";
 import Toolbar from "./components/Toolbar";
 import Preview from "./components/Preview";
 import "./index.css";
@@ -98,7 +98,7 @@ function App() {
     }
   };
 
-  const editorRef = useRef<React.ComponentRef<typeof Editor>>(null);
+  const editorRef = useRef<EditorHandle>(null);
 
   useEffect(() => {
     if (isResizing) {
@@ -158,11 +158,7 @@ function App() {
 
   const handleEmojiSelect = (emoji: Emoji) => {    
     if (editorRef.current) {
-      // @ts-ignore - custom method added in Editor.tsx
-      if (typeof editorRef.current.insertText === 'function') {
-         // @ts-ignore
-        editorRef.current.insertText(emoji.emoji);        
-      }
+      editorRef.current.insertText(emoji.emoji);        
     }
     setShowEmojiPicker(false);
   };
@@ -180,10 +176,8 @@ function App() {
 
   const handleFormat = (type: keyof typeof formattingHandlers) => {
     if (editorRef.current) {
-      if (typeof (editorRef.current as any).insertFormat === 'function') {
-        let [start, end] = formattingHandlers[type];
-        (editorRef.current as any).insertFormat(start, end);
-      }
+      let [start, end] = formattingHandlers[type];
+      editorRef.current.insertFormat(start, end);
     }
   };
 

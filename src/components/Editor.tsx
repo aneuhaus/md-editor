@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
@@ -6,15 +6,24 @@ import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { syntaxHighlighting, defaultHighlightStyle, indentUnit } from '@codemirror/language';
 
+export interface EditorHandle {
+  insertText: (text: string) => void;
+  insertFormat: (startTag: string, endTag: string) => void;
+}
+
 interface EditorProps {
   value: string;
   onChange: (value: string) => void;
-  ref?: React.Ref<HTMLDivElement>;
 }
 
-const Editor = ({ value, onChange, ref }: EditorProps) => {
+const Editor = forwardRef<EditorHandle, EditorProps>(({ value, onChange }, ref) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    insertText,
+    insertFormat
+  }));
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -85,45 +94,49 @@ const Editor = ({ value, onChange, ref }: EditorProps) => {
     const view = viewRef.current;
     
     const selection = view.state.selection.main;
-    const selectedText = view.state.sliceDoc(selection.from, selection.to);
-    const textToInsert = startTag + selectedText + endTag;
+    const before = view.state.sliceDoc(selection.from - startTag.length, selection.from);
+    const after = view.state.sliceDoc(selection.to, selection.to + endTag.length);
 
-    view.dispatch({
-      changes: {
-        from: selection.from,
-        to: selection.to,
-        insert: textToInsert,
-      },
-      selection: {
-        anchor: selection.from + startTag.length,
-        head: selection.from + startTag.length + selectedText.length,
-      },
-      scrollIntoView: true,
-    });
+    if (before === startTag && after === endTag) {
+      // Toggle off: remove surrounding tags
+      view.dispatch({
+        changes: [
+          { from: selection.from - startTag.length, to: selection.from, insert: "" },
+          { from: selection.to, to: selection.to + endTag.length, insert: "" }
+        ],
+        selection: { 
+          anchor: selection.from - startTag.length, 
+          head: selection.to - startTag.length 
+        },
+        scrollIntoView: true,
+      });
+    } else {
+      // Toggle on: add surrounding tags
+      const selectedText = view.state.sliceDoc(selection.from, selection.to);
+      view.dispatch({
+        changes: {
+          from: selection.from,
+          to: selection.to,
+          insert: startTag + selectedText + endTag,
+        },
+        selection: {
+          anchor: selection.from + startTag.length,
+          head: selection.from + startTag.length + selectedText.length,
+        },
+        scrollIntoView: true,
+      });
+    }
     view.focus();
   };
 
   return (
     <div 
-      ref={(node) => {
-        // Internal ref
-        elementRef.current = node;
-        // External ref
-        if (typeof ref === 'function') {
-          ref(node);
-        } else if (ref) {
-          if(node){
-            // @ts-ignore
-            node.insertText = insertText;
-            // @ts-ignore
-            node.insertFormat = insertFormat;
-          }
-          ref.current = node;
-        }
-      }} 
+      ref={elementRef} 
       style={{ height: '100%', width: '100%' }} 
     />
   );
-};
+});
+
+Editor.displayName = 'Editor';
 
 export default Editor;
